@@ -1,15 +1,6 @@
 
-
 // import React, { useState, useRef, useEffect } from "react";
-// import {
-//   Upload,
-//   Send,
-//   Clock,
-//   User,
-//   Mail,
-//   Phone,
-//   Award,
-// } from "lucide-react";
+// import { Upload, Send, Clock } from "lucide-react";
 // import {
 //   extractTextFromPDF,
 //   extractInfoFromText,
@@ -24,7 +15,9 @@
 //   const [input, setInput] = useState("");
 //   const [candidate, setCandidate] = useState<any>(null);
 //   const [missingFields, setMissingFields] = useState<string[]>([]);
-//   const [interviewState, setInterviewState] = useState<"upload" | "collectInfo" | "interview" | "completed">("upload");
+//   const [interviewState, setInterviewState] = useState<
+//     "upload" | "collectInfo" | "interview" | "completed"
+//   >("upload");
 //   const [questionIndex, setQuestionIndex] = useState(0);
 //   const [timer, setTimer] = useState(0);
 //   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -73,7 +66,10 @@
 //     if (missing.length > 0) {
 //       setMissingFields(missing);
 //       setInterviewState("collectInfo");
-//       addMessage("system", `I need your ${missing.join(", ")}. Please provide your ${missing[0]}:`);
+//       addMessage(
+//         "system",
+//         `I need your ${missing.join(", ")}. Please provide your ${missing[0]}:`
+//       );
 //     } else {
 //       startInterview(newCandidate);
 //     }
@@ -122,9 +118,18 @@
 //     setIsTimerActive(false);
 
 //     const q = candidate.questions[questionIndex];
-//     const { score, feedback } = generateAIResponse(q.question, answer, q.difficulty);
+//     const { score, feedback } = generateAIResponse(
+//       q.question,
+//       answer,
+//       q.difficulty
+//     );
 
-//     candidate.questions[questionIndex] = { ...q, answer, aiScore: score, feedback };
+//     candidate.questions[questionIndex] = {
+//       ...q,
+//       answer,
+//       aiScore: score,
+//       feedback,
+//     };
 
 //     addMessage("user", answer);
 //     addMessage("ai", `${feedback} (Score: ${score}/10)`);
@@ -148,6 +153,21 @@
 
 //     addMessage("system", `✅ Interview finished! Final Score: ${finalScore}/10`);
 //     addMessage("ai", summary);
+
+//     // 🔹 Save candidate into localStorage
+//     const candidateData = {
+//       id: c.id,
+//       name: c.name,
+//       email: c.email,
+//       phone: c.phone,
+//       finalScore,
+//       summary,
+//       questions: c.questions,
+//     };
+
+//     const prev = JSON.parse(localStorage.getItem("candidates") || "[]");
+//     prev.push(candidateData);
+//     localStorage.setItem("candidates", JSON.stringify(prev));
 
 //     setInterviewState("completed");
 //   };
@@ -176,8 +196,13 @@
 //         {messages.map((m, i) => (
 //           <div
 //             key={i}
-//             className={`my-1 ${m.sender === "user" ? "text-blue-600" : m.sender === "ai" ? "text-green-600" : "text-gray-600"
-//               }`}
+//             className={`my-1 ${
+//               m.sender === "user"
+//                 ? "text-blue-600"
+//                 : m.sender === "ai"
+//                 ? "text-green-600"
+//                 : "text-gray-600"
+//             }`}
 //           >
 //             <strong>{m.sender}: </strong> {m.text}
 //           </div>
@@ -213,9 +238,8 @@
 //   );
 // }
 
-
 import React, { useState, useRef, useEffect } from "react";
-import { Upload, Send, Clock } from "lucide-react";
+import { Send, Clock } from "lucide-react";
 import {
   extractTextFromPDF,
   extractInfoFromText,
@@ -309,9 +333,18 @@ export default function IntervieweeTab() {
 
   const startInterview = (c: any) => {
     const questions = [
-      ...INTERVIEW_QUESTIONS.easy.map((q) => ({ question: q, difficulty: "easy" })),
-      ...INTERVIEW_QUESTIONS.medium.map((q) => ({ question: q, difficulty: "medium" })),
-      ...INTERVIEW_QUESTIONS.hard.map((q) => ({ question: q, difficulty: "hard" })),
+      ...INTERVIEW_QUESTIONS.easy.map((q) => ({
+        question: q,
+        difficulty: "easy" as const,
+      })),
+      ...INTERVIEW_QUESTIONS.medium.map((q) => ({
+        question: q,
+        difficulty: "medium" as const,
+      })),
+      ...INTERVIEW_QUESTIONS.hard.map((q) => ({
+        question: q,
+        difficulty: "hard" as const,
+      })),
     ];
     const updated = { ...c, questions };
     setCandidate(updated);
@@ -351,7 +384,7 @@ export default function IntervieweeTab() {
 
     if (questionIndex < candidate.questions.length - 1) {
       setTimeout(() => {
-        setQuestionIndex(questionIndex + 1);
+        setQuestionIndex((prev) => prev + 1);
         askQuestion(candidate, questionIndex + 1);
       }, 1500);
     } else {
@@ -369,9 +402,9 @@ export default function IntervieweeTab() {
     addMessage("system", `✅ Interview finished! Final Score: ${finalScore}/10`);
     addMessage("ai", summary);
 
-    // 🔹 Save candidate into localStorage
+    // 🔹 Save to localStorage so InterviewerTab can read it
     const candidateData = {
-      id: c.id,
+      id: Date.now().toString(),
       name: c.name,
       email: c.email,
       phone: c.phone,
